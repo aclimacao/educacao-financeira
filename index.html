@@ -1,0 +1,143 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Simulador de Vida Financeira - ADM5</title><style>
+:root{--b:#3b82f6;--g:#34d399;--r:#fb7185;--m:#9fb3d9;--c:rgba(255,255,255,.07);--l:rgba(255,255,255,.14)}
+*{box-sizing:border-box;margin:0}button{color:inherit}body{font:16px ui-rounded,"SF Pro Rounded","Segoe UI",system-ui,sans-serif;background:#070d24;color:#f1f5ff;display:flex;justify-content:center}
+#app{width:100%;max-width:430px;min-height:100dvh;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);background:radial-gradient(420px 320px at 95% -5%,#16a34a66,transparent),radial-gradient(520px 420px at -10% 8%,#2563eb99,transparent),linear-gradient(#0a1235,#070d24)}
+header{padding:16px 18px 4px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+main{flex:1;padding:12px 14px 20px;display:flex;flex-direction:column;gap:12px;animation:in .4s cubic-bezier(.2,.9,.3,1.2)}@keyframes in{from{opacity:0;transform:translateY(14px) scale(.98)}}
+.card{background:var(--c);border:1px solid var(--l);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-radius:24px;padding:16px;display:grid;gap:8px}
+.hero{background:linear-gradient(135deg,#2563eb,#0d9488 130%);border:0}.tip{background:#34d39920;border-color:#34d39955}
+.chip{background:#facc15;color:#1e3a8a;font:800 12px system-ui;padding:5px 11px;border-radius:99px;justify-self:start;white-space:nowrap}
+.btn{border:0;border-radius:18px;padding:16px;font:800 16px inherit;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;width:100%;cursor:pointer;box-shadow:0 10px 24px #2563eb55;transition:transform .15s}.btn.g{background:linear-gradient(135deg,#34d399,#16a34a);color:#052e1a;box-shadow:0 10px 24px #16a34a55}.btn:active,.opt:active{transform:scale(.96)}
+.opt{text-align:left;background:var(--c);border:1px solid var(--l);border-radius:20px;padding:13px;font:inherit;cursor:pointer;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;transition:transform .15s,border-color .2s}.opt:hover{border-color:var(--g)}.opt small{color:var(--m)}
+.lt{width:32px;height:32px;border-radius:11px;background:linear-gradient(135deg,#60a5fa,#34d399);display:grid;place-items:center;font-weight:900;color:#06210f}
+.stp{display:flex;gap:5px}.stp i{flex:1;height:5px;border-radius:5px;background:var(--l)}.stp .d{background:var(--g)}.stp .n{background:var(--b)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.st{background:var(--c);border:1px solid var(--l);border-radius:18px;padding:10px 12px}.st small,.dr small{font-size:12px;color:var(--m)}.st b{display:block;font-size:17px}
+.big{grid-column:span 2;background:linear-gradient(135deg,#34d39933,#3b82f633)}.big b{font-size:30px;color:var(--g);letter-spacing:-1px}
+.pos{color:var(--g)}.neg{color:var(--r)}.bar{height:9px;background:var(--l);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#3b82f6,#34d399);transition:width .8s}
+.pk{background:var(--c);border:1px solid var(--l);border-radius:16px;padding:6px;font:700 12px system-ui;cursor:pointer;display:grid;justify-items:center;gap:3px}.pk.on{border-color:var(--g);background:#34d39922}
+.sw{width:42px;height:42px;border-radius:50%;border:3px solid #fff3;cursor:pointer}.sw.on{border-color:#fff;box-shadow:0 0 0 3px var(--g)}
+.av{background:radial-gradient(circle at 50% 30%,#7dd3fc,#2563eb 80%);border-radius:26%;flex:none}
+.dr{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--l)}.h{display:none!important}
+input{font:800 18px inherit;color:inherit;text-align:center;border:0;border-bottom:2px solid var(--l);background:none;padding:6px;outline:0}input:focus{border-color:var(--g)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+body{font-size:17px}header{font-size:18px}.btn{font-size:19px;padding:18px}.opt{font-size:18px;padding:15px;gap:14px}.opt small{font-size:15.5px;line-height:1.35}.lt{width:36px;height:36px;font-size:18px}.pk{font:700 15px system-ui;padding:8px}.chip{font-size:14px}.st small,.dr small{font-size:13px}.st b{font-size:19px}.big b{font-size:32px}.dr{font-size:16px}input{font-size:20px}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.sw{width:46px;height:46px}.card b{font-size:17px}
+</style></head><body><div id="app"><header><span>💸 Vida Financeira</span><span class="chip">ADM5</span></header><main id="m"></main></div><script>
+const API=''; // Cole aqui a URL do Apps Script (ranking). Vazio = salva só neste aparelho.
+const $=s=>document.querySelector(s),R=n=>'R$ '+Math.round(n).toLocaleString('pt-BR'),cl=v=>Math.max(0,Math.min(100,Math.round(v))),esc=t=>String(t).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+const SK=['#f7d070','#7db4ff','#ef6a5e','#fde0cc','#9a6a4d'],SN=['Amarela','Azul','Vermelha','Branca','Marrom'],AG=[16,20,25,35,45,60];
+const HN=['Social','Arrepiado','Volumoso','Raspado','Longo','Coque','Cacheado','Chanel'];
+const HR=[['','M22 52C16 22 40 8 64 14C80 18 84 38 78 52C77 44 74 38 68 35C56 38 40 36 30 40C26 44 24 48 22 52Z'],
+['','M22 50L20 26L32 32L34 12L44 26L52 8L60 26L72 12L74 32L84 24L78 50C74 42 66 38 50 38C34 38 26 42 22 50Z'],
+['<circle cx="50" cy="38" r="34"/><circle cx="22" cy="52" r="11"/><circle cx="78" cy="52" r="11"/><circle cx="32" cy="18" r="12"/><circle cx="68" cy="18" r="12"/><circle cx="50" cy="10" r="12"/>','M26 48C26 34 38 30 50 30C62 30 74 34 74 48C70 40 62 38 50 38C38 38 30 40 26 48Z'],
+['','M25 46C26 30 38 25 50 25C62 25 74 30 75 46C72 38 62 33 50 33C38 33 28 38 25 46Z'],
+['<path d="M18 54C12 10 88 10 82 54C84 76 90 96 92 112H8C10 96 16 76 18 54Z"/>','M22 54C18 24 50 10 76 30C82 38 80 48 78 56C74 44 66 38 54 34C44 40 32 44 22 54Z'],
+['<circle cx="50" cy="11" r="12"/><path d="M24 50C22 18 78 18 76 50Z"/>','M23 50C21 28 79 28 77 50C70 40 62 37 50 37C38 37 30 40 23 50Z'],
+['<path d="M16 62C6 20 94 20 84 62C90 84 78 96 68 92L70 64L30 64L32 92C22 96 10 84 16 62Z"/>','M22 50C24 24 76 24 78 50C70 36 58 32 50 34C42 32 30 36 22 50Z'],
+['<path d="M17 56C12 14 88 14 83 56C85 70 84 80 80 86L66 80L34 80L20 86C16 80 15 70 17 56Z"/>','M21 50C18 20 82 20 79 50L77 40C60 33 40 33 23 40Z']];
+// ===== CENÁRIOS (edite textos e valores aqui) =====
+// d: soma em variáveis | m: gastos mensais | b: compra na hora (dinheiro→reserva→invest.→dívida) | bl: compra após juntar
+// rv/iv: % do dinheiro enviado à reserva/investimentos | set: novo salário | job: profissão
+const DEC=[
+{t:'O primeiro salário',s:'Você tem 16 anos e conseguiu seu primeiro emprego: R$ 900 por mês. Seus pais ainda pagam as despesas principais. Você quer aproveitar, mas também construir independência. Está de olho em um celular de R$ 1.800.',tip:'Parcelar costuma custar mais do que o preço à vista. Juntar antes de comprar evita juros.',o:[
+{n:'Guardar a maior parte',c:'Guarda R$ 600 por mês e usa R$ 300 em lazer.',r:'O dinheiro acumulado cresce, mas sobra menos para lazer.',d:{qol:-5},m:{laz:200}},
+{n:'Comprar o celular parcelado',c:'Leva o celular agora e assume as parcelas.',r:'Celular na mão, mas parcelas e juros reduzem o que sobra todo mês.',d:{debt:2400,qol:5},m:{laz:200}},
+{n:'Juntar e comprar à vista',c:'Espera alguns meses e paga os R$ 1.800 sem juros.',r:'Sem juros nem parcelas, mas o dinheiro guardado diminui por um tempo.',d:{qol:3},m:{laz:200},bl:1800},
+{n:'Priorizar experiências',c:'Não compra o celular e gasta mais em lazer.',r:'Mais qualidade de vida hoje, bem menos dinheiro acumulado.',d:{qol:15},m:{laz:650}}]},
+{t:'Investir em você ou guardar?',s:'Você tem 20 anos e, depois de ser efetivado, recebe R$ 2.500 por mês. O que você tem guardado depende das escolhas dos 16 anos. Um curso profissionalizante custa R$ 4.000, sem garantia de aumento de salário.',tip:'Estudar pode abrir portas, mas é uma aposta: não há garantia de retorno. Bolsas e cursos gratuitos reduzem o risco.',o:[
+{n:'Fazer o curso',c:'Paga os R$ 4.000 com o dinheiro que tem.',r:'O dinheiro diminui, mas sua qualificação e suas chances futuras aumentam.',b:4000,d:{qual:30,free:-5},job:'Profissional qualificado'},
+{n:'Guardar o dinheiro',c:'Não faz o curso e coloca tudo na reserva.',r:'A reserva cresce e rende, mas sua qualificação continua a mesma.',rv:1,d:{qol:-3}},
+{n:'Buscar alternativa mais barata',c:'Procura bolsa, curso gratuito ou formação de R$ 800.',r:'Você ganha alguma qualificação e preserva boa parte do dinheiro.',b:800,d:{qual:15,free:-3}},
+{n:'Trabalhar mais',c:'Faz horas extras e uma segunda fonte de renda.',r:'A renda sobe por um tempo, mas o tempo livre e o bem-estar caem.',d:{sal:700,free:-20,qol:-8}}]},
+{t:'Carro ou outras prioridades?',s:'Você tem 25 anos e sua renda depende das suas escolhas profissionais anteriores. O trabalho exige deslocamentos e você perde muito tempo no transporte. Está pensando em um carro de R$ 40.000.',tip:'O carro custa mais que o preço: combustível, seguro, IPVA e manutenção. Dinheiro parado também perde valor com a inflação.',o:[
+{n:'Comprar um usado à vista',c:'Paga R$ 28.000 à vista por um carro usado.',r:'Mobilidade e tempo livre sobem, mas o dinheiro cai e surgem custos de manutenção.',b:28000,m:{tra:500},d:{qol:8,free:8}},
+{n:'Financiar um carro mais novo',c:'Dá R$ 4.000 de entrada e financia R$ 36.000.',r:'Você preserva parte do dinheiro, mas assume dívida e juros por anos.',b:4000,m:{tra:600},d:{debt:36000,qol:12,free:8}},
+{n:'Continuar no transporte público',c:'Mantém o transporte e investe 70% do que tem.',r:'O patrimônio financeiro cresce, mas o deslocamento continua longo.',iv:.7,m:{tra:250},d:{free:-8,qol:-4}},
+{n:'Procurar alternativas',c:'Combina transporte público, carona, bicicleta e aplicativos.',r:'Evita dívida e reduz gastos, mas exige adaptar a rotina.',m:{tra:300},d:{free:-3,qol:2}}]},
+{t:'Comprar, financiar ou alugar?',s:'Você tem 35 anos e paga R$ 2.000 de aluguel por mês. Encontrou um apartamento de R$ 400.000. Comprar exigiria usar parte importante do que você guardou e assumir um financiamento longo.',tip:'No financiamento, o total pago ao fim costuma ser bem maior que o valor do imóvel. Alugar e investir também pode fazer sentido.',o:[
+{n:'Comprar o apartamento',c:'Dá R$ 80.000 de entrada e financia R$ 320.000.',r:'O patrimônio imobiliário sobe, mas também a dívida, as despesas e a falta de liquidez.',b:80000,m:{mor:900},d:{mort:320000,house:400000,qol:6}},
+{n:'Continuar no aluguel',c:'Mantém o dinheiro investido e segue pagando aluguel.',r:'Mais liquidez e investimentos, mas nenhum patrimônio imobiliário.',iv:.8,d:{free:3}},
+{n:'Procurar um imóvel mais barato',c:'Compra um de R$ 280.000: entrada de R$ 56.000.',r:'Financiamento e dívida menores, abrindo mão de algumas características.',b:56000,m:{mor:700},d:{mort:224000,house:280000,qol:4}},
+{n:'Adiar a compra',c:'Continua alugando e reforça a reserva.',r:'A reserva e a entrada futura crescem, mas o aluguel continua.',rv:.8}]},
+{t:'Mudar de emprego ou permanecer?',s:'Você está há anos no mesmo emprego, com salário de R$ 8.000. Chegou uma proposta de outra empresa: R$ 11.000 por mês, com mais responsabilidades, viagens e uma rotina nova.',tip:'Salário maior vem com custos: tempo livre e responsabilidade também entram na conta.',o:[
+{n:'Aceitar a nova oportunidade',c:'Muda de emprego e passa a receber R$ 11.000.',r:'Renda e capacidade de investir sobem, mas o tempo livre pode diminuir.',set:()=>11000,d:{free:-15,qol:-3},job:'Cargo sênior'},
+{n:'Permanecer no emprego',c:'Mantém o emprego e o salário de R$ 8.000.',r:'Rotina e estabilidade preservadas, com o mesmo salário.',set:()=>8000,d:{free:3,qol:5}},
+{n:'Negociar com o empregador',c:'Tenta conseguir aumento ou promoção.',r:'Pode dar certo ou não: não há garantia.',set:s=>s.qual>=30?9500:8000,x:v=>v>8000?'Com sua qualificação, a negociação deu certo.':'Sem diferenciais para mostrar, o aumento não veio.'},
+{n:'Procurar outra oportunidade',c:'Não aceita nenhuma proposta agora e segue procurando.',r:'O salário fica igual por enquanto, e pode surgir algo diferente.',set:()=>Math.random()<.4?9500:8000,x:v=>v>8000?'Surgiu uma proposta melhor!':'Nenhuma oferta nova apareceu por enquanto.',d:{free:4}}]},
+{t:'Qual será sua próxima fase?',s:'Você chegou aos 60 anos. Sua situação financeira é resultado de todas as decisões anteriores: patrimônio, investimentos, dívidas e renda mensal.',tip:'Na aposentadoria, investimentos e tempo livre pesam mais que o salário.',o:[
+{n:'Aposentar-se completamente',c:'Passa a viver da aposentadoria e dos investimentos.',r:'Muito mais tempo livre; a renda do trabalho cai e os investimentos ganham importância.',set:()=>3500,d:{free:30,qol:10},job:'Aposentado(a)'},
+{n:'Continuar trabalhando',c:'Segue na ativa com a mesma renda.',r:'A renda se mantém e o patrimônio pode crescer, com menos tempo livre.',set:s=>s.sal,d:{free:-10,qol:-2},job:'Profissional experiente'},
+{n:'Reduzir a jornada',c:'Trabalha menos e recebe parte da aposentadoria.',r:'Mais tempo livre, renda do trabalho menor, complementada pela aposentadoria.',set:s=>s.sal/2+1750,d:{free:15,qol:6},job:'Jornada reduzida'},
+{n:'Buscar um trabalho mais tranquilo',c:'Aceita ganhar menos por uma rotina menos exigente.',r:'Renda menor, mais tempo livre e possível ganho em qualidade de vida.',set:()=>4000,d:{free:20,qol:12},job:'Trabalho tranquilo'}]}];
+// Valores-base ao chegar em cada idade (o salário só muda aqui ou por escolha)
+const HK={1:s=>{s.sal=2500;Object.assign(s.e,{mor:800,ali:500,tra:250,laz:Math.min(s.e.laz,500),con:200,out:200})},
+2:s=>{s.sal=3500+s.qual*25;Object.assign(s.e,{mor:1200,ali:600,con:300,out:250})},
+3:s=>{s.sal=6500+s.qual*25;Object.assign(s.e,{mor:2000,ali:800,con:400,out:400,laz:500})},
+4:s=>{s.sal=8000;Object.assign(s.e,{ali:900,con:500,out:450})}};
+let S,TI;const PV={};
+function init(){Object.keys(PV).forEach(k=>delete PV[k]);const o=S;S={scr:o?'cust':'intro',i:0,name:o?o.name:'',ch:o?o.ch:{h:0,sk:3,g:0,hc:0,bd:0},log:[],st:{cash:500,res:0,inv:0,debt:0,mort:0,house:0,sal:900,free:80,qol:60,qual:0,job:'Jovem Aprendiz',e:{mor:0,ali:0,tra:0,laz:0,con:0,out:100}}}}
+const HC=['#2b2118','#5b3a29','#b45309','#e0b25a','#c2410c','#3b82f6'],mx=(h,t)=>{const n=parseInt(h.slice(1),16);return`rgb(${[16,8,0].map(q=>((n>>q&255)*(1-t)+229*t)|0)})`};
+const SH=['#0d9488','#2563eb','#16a34a','#e8eef8','#1e3a8a','#475569'];
+function av(i,w,c=S.ch){const t=[0,0,.04,.2,.5,.92][i],k=mx(HC[c.hc],t),sk=SK[c.sk],h=HR[c.h],ln='stroke="#000" stroke-opacity=".25" fill="none" stroke-linecap="round"',
+ag=(i>2?`<path d="M36 62q-3 6 0 12M64 62q3 6 0 12" ${ln}/>`:'')+(i>3?`<path d="M38 38q12-4 24 0M40 42q10-3 20 0M29 54l-4-1M29 57l-4 1M71 54l4-1M71 57l4 1" ${ln}/>`:'')+(i>4?`<path d="M34 60q5 3 10 0M56 60q5 3 10 0" ${ln}/>`:''),
+fit=[`<path d="M36 82C40 92 60 92 64 82" stroke="#000" stroke-opacity=".22" stroke-width="5" fill="none"/><path d="M44 92v12M56 92v12" stroke="#fff" stroke-width="2"/>`,`<path d="M37 80Q50 98 63 80Z" fill="${sk}"/>`,`<path d="M38 80L50 92L43 75ZM62 80L50 92L57 75Z" fill="#fff"/>`,`<path d="M36 80L50 95L43 74ZM64 80L50 95L57 74Z" fill="#fff"/><path d="M47 92h6l2 20H45Z" fill="#16a34a"/>`,`<path d="M42 79L50 100L58 79Z" fill="#fff"/><path d="M30 86L50 112L38 80ZM70 86L50 112L62 80Z" fill="#000" fill-opacity=".25"/>`,`<path d="M39 79L50 102L61 79Z" fill="#f1f5f9"/><circle cx="50" cy="105" r="1.6" fill="#fff"/><circle cx="50" cy="110" r="1.6" fill="#fff"/>`][i],
+eyes=[39,61].map(x=>`<ellipse cx="${x}" cy="54" rx="4.6" ry="3.8" fill="#fff"/><circle cx="${x}" cy="54.3" r="2.9" fill="#5b3a29"/><circle cx="${x}" cy="54.3" r="1.5" fill="#111"/><circle cx="${x+1.2}" cy="53.1" r=".9" fill="#fff"/><path d="M${x-5} 52.4q5-3.6 10 0" stroke="#111" stroke-width="1.5" fill="none" stroke-linecap="round"/>`).join(''),
+gl=c.g==1?`<g fill="#fff" fill-opacity=".1" stroke="#111827" stroke-width="2"><circle cx="39" cy="54" r="9"/><circle cx="61" cy="54" r="9"/><path d="M48 53q2-2 4 0M30 53L24 51M70 53L76 51" fill="none"/></g>`:c.g==2?`<g fill="#fff" fill-opacity=".1" stroke="#111827" stroke-width="2.2"><rect x="29" y="47" width="19" height="14" rx="3"/><rect x="52" y="47" width="19" height="14" rx="3"/><path d="M48 52h4M29 52L24 50M71 52L76 50" fill="none"/></g>`:'';
+return `<svg class="av" viewBox="0 0 100 112" width="${w}" height="${w*1.12}"><g fill="${k}">${h[0]}</g><path d="M4 112C6 88 24 80 50 80S94 88 96 112Z" fill="${SH[i]}"/><rect x="42" y="64" width="16" height="22" rx="6" fill="${sk}"/><rect x="42" y="74" width="16" height="8" fill="#000" fill-opacity=".14"/>${fit}<circle cx="24" cy="56" r="5" fill="${sk}"/><circle cx="76" cy="56" r="5" fill="${sk}"/><path d="M24 48C24 24 76 24 76 48C76 70 64 82 50 82C36 82 24 70 24 48Z" fill="${sk}"/><path d="M76 48C76 70 64 82 50 82C60 76 70 62 70 46Z" fill="#000" fill-opacity=".06"/>${c.bd?`<path d="M25 55C25 80 38 90 50 90C62 90 75 80 75 55C71 67 65 71 58 70Q50 66 42 70C35 71 29 67 25 55Z" fill="${k}"/>`:''}<circle cx="35" cy="64" r="5" fill="#f43f5e" fill-opacity=".16"/><circle cx="65" cy="64" r="5" fill="#f43f5e" fill-opacity=".16"/><path d="M26 44C34 36 66 36 74 44C66 40 34 40 26 44Z" fill="#000" fill-opacity=".1"/><path d="M42 69.5Q50 77.5 58 69.5Q50 72.5 42 69.5Z" fill="#fff" stroke="#9f2d3a" stroke-width="1.6" stroke-linejoin="round"/><path d="M49 55q-2.5 7-1 9q2 1.5 4.5 0" ${ln}/>${eyes}<path d="M32 45q6-3.5 13-1.5M55 43.5q7-2 13 1.5" stroke="${k}" stroke-width="${i>3?2.9:2.3}" stroke-linecap="round" fill="none"/>${ag}<path d="${h[1]}" fill="${k}"/>${gl}</svg>`}
+const go=s=>{S.scr=s;draw()},set=(k,v)=>{S.ch[k]=v;draw()};
+function start(){S.name=S.name.trim()||'Alex';go('play')}
+const pay=x=>{const s=S.st;for(const k of['cash','res','inv']){const t=Math.min(s[k],x);s[k]-=t;x-=t}s.debt+=x;return x};
+function sim(){const s=S.st;let sp=Object.values(s.e).reduce((a,b)=>a+b,0)*12;
+s.debt*=1.15;let p=s.debt*.25;s.debt-=p;sp+=p;s.mort*=1.1;p=s.mort*.11;s.mort-=p;sp+=p; // juros simplificados
+s.cash+=s.sal*12-sp;if(s.cash<0){s.debt-=s.cash;s.cash=0}
+s.cash*=.96;s.inv*=1.08;s.res*=1.06;s.house*=1.04} // inflação, rendimentos e valorização
+function pick(k){navigator.vibrate&&navigator.vibrate(20);const D=DEC[S.i],o=D.o[k],s=S.st,a={...s},nt=[o.r],last=S.i==5,f=AG[S.i];
+Object.entries(o.d||{}).forEach(([x,v])=>s[x]+=v);if(o.m)Object.assign(s.e,o.m);
+if(o.rv){s.res+=s.cash*o.rv;s.cash*=1-o.rv}if(o.iv){s.inv+=s.cash*o.iv;s.cash*=1-o.iv}
+const loan=x=>{const g=pay(x);if(g>0)nt.push('Você não tinha o suficiente e completou com um empréstimo de '+R(g)+', que cobra juros altos.')};
+if(o.b)loan(o.b);if(o.set){const v=o.set(s);s.sal=v;if(o.x)nt.push(o.x(v))}if(o.job)s.job=o.job;
+S.log.push([f,o.n]);if(!last)for(let j=0;j<AG[S.i+1]-f;j++)sim();
+if(o.bl)loan(o.bl);s.free=cl(s.free);s.qol=cl(s.qol);if(!last){S.i++;HK[S.i]&&HK[S.i](s)}
+const dl=(l,d,inv,u='')=>Math.abs(d)<1?'':`<div class="dr"><span>${l}</span><b class="${(d>0)!=!inv?'neg':'pos'}">${d>0?'+':'−'}${u?Math.abs(d)+' '+u:R(Math.abs(d))}</b></div>`;
+const rows=dl('Dinheiro',s.cash-a.cash)+dl('Reserva',s.res-a.res)+dl('Investimentos',s.inv-a.inv)+dl('Imóvel',s.house-a.house)+dl('Dívidas',s.debt+s.mort-a.debt-a.mort,1)+dl('Salário',s.sal-a.sal)+dl('Tempo livre',s.free-a.free,0,'pts')+dl('Qualidade de vida',s.qol-a.qol,0,'pts');
+S.nx={f,t:AG[S.i],nt,rows,tip:D.tip,last};go('skip')}
+const V={
+intro:()=>`<div class="card hero" style="text-align:center;margin:auto 0;padding:28px 18px"><div style="font-size:56px">💸</div><h1>Simulador de Vida Financeira</h1><p>Dos 16 aos 60 anos, só 6 decisões. Não existe resposta certa: cada escolha tem vantagens, custos e consequências futuras.</p></div><button class="btn g" onclick="go('cust')">Começar</button>`,
+cust:()=>`<div class="card" style="justify-items:center;text-align:center"><h2>Crie seu personagem</h2>${av(0,150)}<input id="nm" value="${esc(S.name)}" placeholder="Seu nome" maxlength="14" oninput="S.name=this.value"></div>
+<div class="card"><b>Cabelo</b><div class="grid4">${HR.map((_,k)=>`<button class="pk ${S.ch.h==k?'on':''}" onclick="set('h',${k})">${av(0,58,{...S.ch,h:k})}${HN[k]}</button>`).join('')}</div>
+<b>Cor do cabelo</b><div class="row">${HC.map((c,k)=>`<button class="sw ${S.ch.hc==k?'on':''}" style="background:${c}" aria-label="Cor ${k+1}" onclick="set('hc',${k})"></button>`).join('')}</div>
+<b>Cor da pele</b><div class="row">${SK.map((c,k)=>`<button class="sw ${S.ch.sk==k?'on':''}" style="background:${c}" aria-label="${SN[k]}" onclick="set('sk',${k})"></button>`).join('')}</div>
+<b>Óculos</b><div class="grid3">${['Sem','Redondo','Quadrado'].map((t,k)=>`<button class="pk ${S.ch.g==k?'on':''}" onclick="set('g',${k})">${t}</button>`).join('')}</div>
+<b>Barba</b><div class="grid"><button class="pk ${S.ch.bd?'':'on'}" onclick="set('bd',0)">Sem barba</button><button class="pk ${S.ch.bd?'on':''}" onclick="set('bd',1)">Com barba</button></div></div>
+<button class="btn g" onclick="start()">Iniciar vida financeira</button>`,
+play:()=>{const s=S.st,D=DEC[S.i],tot=s.cash+s.res+s.inv+s.house-s.debt-s.mort,dv=s.debt+s.mort,st=(l,v,c='')=>`<div class="st"><small>${l}</small><b class="${c}" data-v="${v}">${R(v)}</b></div>`,br=(l,v)=>`<div><small>${l} ${v}%</small><div class="bar"><i style="width:${v}%"></i></div></div>`;
+return `<div class="stp">${AG.map((a,k)=>`<i class="${k<S.i?'d':k==S.i?'n':''}"></i>`).join('')}</div>
+<div class="row" style="justify-content:flex-start;align-items:center;flex-wrap:nowrap">${av(S.i,64)}<div style="flex:1"><b>${esc(S.name)}</b><br><small style="color:var(--m)">${s.job}</small></div><span class="chip">${AG[S.i]} anos</span></div>
+<div class="grid"><div class="st big"><small>Patrimônio líquido</small><b data-v="${tot}">${R(tot)}</b></div>${st('Salário',s.sal,'pos')}${st('Dinheiro',s.cash)}${st('Reserva',s.res,'pos')}${st('Investimentos',s.inv,'pos')}${st('Dívidas',dv,dv?'neg':'')}${st('Imóvel',s.house)}</div>
+<div class="card">${br('⏰ Tempo livre',s.free)}${br('😊 Qualidade de vida',s.qol)}</div>
+<div class="card hero"><h2>${D.t}</h2><p>${D.s}</p></div>${D.o.map((o,k)=>`<button class="opt" onclick="pick(${k})"><span class="lt">${'ABCD'[k]}</span><span><b>${o.n}</b><br><small>${o.c}</small></span></button>`).join('')}`},
+skip:()=>{const n=S.nx;return `<div class="card hero" style="text-align:center"><small>${n.last?'Resultado da decisão':'Avançando no tempo'}</small><div id="tk" style="font-size:64px;font-weight:900">${n.f}</div><small>anos</small></div>
+<div id="rs" class="${n.f<n.t?'h':''}" style="display:grid;gap:12px"><div class="card"><b>O que aconteceu</b>${n.nt.map(t=>`<p>${t}</p>`).join('')}</div>${n.rows?`<div class="card"><b>O que mudou${n.f<n.t?' em '+(n.t-n.f)+' anos':''}</b>${n.rows}</div>`:''}<div class="card tip"><p><b>💡 Você sabia?</b> ${n.tip}</p></div><button class="btn" onclick="go('${n.last?'end':'play'}')">${n.last?'Ver meu raio-X':'Continuar'}</button></div>`},
+end:()=>{const s=S.st,tot=s.cash+s.res+s.inv+s.house-s.debt-s.mort,pm=(s.debt*.25+s.mort*.11)/12,E={mor:'🏠 Moradia',ali:'🍔 Alimentação',tra:'🚗 Transporte',laz:'🎮 Lazer',con:'💡 Contas',out:'📦 Outros'},rw=Object.entries(E).map(([k,l])=>[l,s.e[k]]);if(pm>0)rw.push(['💳 Parcelas de dívidas',pm]);
+S.tot=tot;const it=(l,v,c='')=>`<div class="dr"><span>${l}</span><b class="${c}">${v}</b></div>`;
+return `<div class="card hero" style="grid-template-columns:auto 1fr;align-items:center">${av(5,90)}<div><small>Aos 60 anos</small><h2>${esc(S.name)}</h2><p>${s.job}</p></div></div>
+<div class="card"><h3>Raio-X financeiro</h3>${it('💰 Patrimônio total',R(tot),tot<0?'neg':'pos')}${it('📈 Investimentos',R(s.inv))}${it('🏠 Patrimônio imobiliário',R(s.house))}${it('💳 Dívidas',R(s.debt+s.mort),s.debt+s.mort?'neg':'')}${it('💵 Renda mensal',R(s.sal+s.inv*.004))}${it('🛟 Reserva',R(s.res))}${it('💵 Dinheiro disponível',R(s.cash))}${it('⏰ Tempo livre',s.free+'%')}${it('😊 Qualidade de vida',s.qol+'%')}</div>
+<div class="card"><h3>Média de gastos mensais: ${R(rw.reduce((a,r)=>a+r[1],0))}</h3>${rw.map(r=>it(r[0],R(r[1]))).join('')}</div>
+<div class="card"><h3>Sua linha do tempo</h3>${S.log.map((l,i)=>`<div class="dr"><b>${l[0]}</b><span style="text-align:right">${l[1]}</span></div>${i<5?'<div style="text-align:center;color:var(--m)">↓</div>':''}`).join('')}</div>
+<div class="card hero" style="text-align:center"><p><b>Estas foram as consequências das escolhas que você fez ao longo da sua vida.</b></p></div>
+<div class="card"><h3>Mural de trajetórias</h3><p><small>Cada trajetória é única: veja quem tem mais patrimônio, tempo livre ou qualidade de vida.</small></p><button id="sv" class="btn g" onclick="save()">Salvar minha trajetória</button><div id="mu"></div></div>
+<button class="btn" onclick="init();draw()">Jogar novamente</button>`}};
+function draw(){clearInterval(TI);const m=$('#m');m.style.animation='none';m.offsetHeight;m.style.animation='';m.innerHTML=V[S.scr]();scrollTo(0,0);
+if(S.scr=='skip'&&S.nx.f<S.nx.t){let a=S.nx.f;TI=setInterval(()=>{const e=$('#tk');if(!e)return clearInterval(TI);e.textContent=++a;if(a>=S.nx.t){clearInterval(TI);$('#rs').classList.remove('h')}},300)}
+cu();if(S.scr=='end')mural()}
+function cu(){document.querySelectorAll('[data-v]').forEach(e=>{const k=e.parentNode.firstChild.textContent,v=+e.dataset.v,f=PV[k]??v,t=performance.now();PV[k]=v;(function u(n){if(!e.isConnected)return;const p=Math.min(1,(n-t)/700);e.textContent=R(f+(v-f)*(1-Math.pow(1-p,3)));p<1&&requestAnimationFrame(u)})(t)})}
+// ===== MURAL / RANKING =====
+let MT='p';
+async function rows(){try{if(API){const r=await fetch(API);return await r.json()}}catch(e){return[]}return JSON.parse(localStorage.getItem('mural')||'[]')}
+async function mural(t){MT=t||MT;const L=(await rows()).sort((a,b)=>b[MT]-a[MT]).slice(0,10),tb=[['p','💰 Patrimônio'],['f','⏰ Tempo livre'],['q','😊 Qualidade']];
+$('#mu').innerHTML=`<div class="grid3" style="margin:10px 0">${tb.map(([k,l])=>`<button class="pk ${k==MT?'on':''}" onclick="mural('${k}')">${l}</button>`).join('')}</div>`+(L.length?L.map((r,i)=>`<div class="dr"><span>${i+1}. ${esc(r.n)}</span><b>${MT=='p'?R(r.p):r[MT]+'%'}</b></div>`).join(''):'<p>Ainda não há trajetórias salvas.</p>')}
+async function save(){const b=$('#sv');b.disabled=true;const r={n:S.name,p:Math.round(S.tot),f:S.st.free,q:S.st.qol};
+if(API)await fetch(API,{method:'POST',mode:'no-cors',body:JSON.stringify(r)}).catch(()=>0);else{const L=JSON.parse(localStorage.getItem('mural')||'[]');L.push(r);localStorage.setItem('mural',JSON.stringify(L))}
+b.textContent='✔ Trajetória salva';setTimeout(mural,API?1500:0)}
+init();draw();
+</script></body></html>
